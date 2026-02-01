@@ -33,6 +33,7 @@ class Events:
             return True
 
         return False
+    
 
     def uses_resource(self, resource: Resources):
 

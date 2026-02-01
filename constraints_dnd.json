@@ -1,0 +1,45 @@
+{
+  "domain": "dnd_training_center",
+  "resources": [
+    {"name": "Templo", "type": "Institucion", "quantity": 1},
+    {"name": "Paladin Maestro", "type": "Personal", "quantity": 2},
+    {"name": "Clerigo Maestro", "type": "Personal", "quantity": 1},
+    {"name": "Barbaro Maestro", "type": "Personal", "quantity": 1},
+    {"name": "Bardo Profesor", "type": "Personal", "quantity": 1},
+    {"name": "Monje Anciano", "type": "Personal", "quantity": 1},
+    {"name": "Pilar de la Sabiduria", "type": "Institucion", "quantity": 1},
+    {"name": "Biblioteca", "type": "Institucion", "quantity": 1},
+    {"name": "Campo de Entrenamiento", "type": "Institucion", "quantity": 1},
+    {"name": "Salon de Instrumentos Musicales", "type": "Institucion", "quantity": 1}
+  ],
+  "co_requisites": {
+    "Templo": ["Clerigo Maestro"],
+    "Biblioteca": ["Paladin Maestro"],
+    "Campo de Entrenamiento": ["Barbaro Maestro"],
+    "Pilar de la Sabiduria": ["Monje Anciano"],
+    "Salon de Instrumentos Musicales": ["Bardo Profesor"]
+  },
+  "mutual_exclusions": [
+    ["Clerigo Maestro", "Campo de Entrenamiento"],
+    ["Clerigo Maestro", "Salon de Instrumentos Musicales"],
+    ["Clerigo Maestro", "Pilar de la Sabiduria"],
+    ["Clerigo Maestro", "Biblioteca"],
+    ["Barbaro Maestro", "Templo"],
+    ["Barbaro Maestro", "Salon de Instrumentos Musicales"],
+    ["Barbaro Maestro", "Pilar de la Sabiduria"],
+    ["Barbaro Maestro", "Biblioteca"],
+    ["Bardo Profesor", "Templo"],
+    ["Bardo Profesor", "Campo de Entrenamiento"],
+    ["Bardo Profesor", "Pilar de la Sabiduria"],
+    ["Bardo Profesor", "Biblioteca"],
+    ["Monje Anciano", "Templo"],
+    ["Monje Anciano", "Campo de Entrenamiento"],
+    ["Monje Anciano", "Salon de Instrumentos Musicales"],
+    ["Monje Anciano", "Biblioteca"],
+    ["Paladin Maestro", "Templo"],
+    ["Paladin Maestro", "Campo de Entrenamiento"],
+    ["Paladin Maestro", "Salon de Instrumentos Musicales"],
+    ["Paladin Maestro", "Pilar de la Sabiduria"]
+  ],
+  "type_exclusion": true
+}

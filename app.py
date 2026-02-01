@@ -7,6 +7,7 @@ import streamlit as st
 
 if "DATA" not in st.session_state:
     st.session_state["DATA"] = Database([], [])
+    st.session_state["DATA"].load_constraints("constraints_dnd.json")
 
 DATA = st.session_state["DATA"]
 
@@ -50,32 +51,15 @@ if st.session_state.get("confirm_delete", False):
             st.session_state["confirm_delete"] = False
             st.sidebar.info("Borrado cancelado.")
 
-tab1, tab2 = st.tabs(["Recursos", "Eventos"])
-
-with tab1:
-    with st.form("form_resource"):
-
-        st.header("Gestion de Recursos")
-
-        resource_name = st.text_input("Nombre del recurso")
-
-        resource_type = st.text_input("Tipo de recurso")
-
-        resource_quantity = st.number_input("Cantidad del recurso", min_value=1)
-
-        add_resource_button = st.form_submit_button("Agregar Recurso")
-
-if add_resource_button:
-    resource = Resources(resource_name, resource_type, resource_quantity)
-    DATA.add_resource(resource)
-    st.success(f"Recurso {resource_name} agregado exitosamente")
-
+st.subheader("Recursos Disponibles")
 resources_table = []
 for r in DATA.list_resources():
     resources_table.append({"Nombre": r.name, "Tipo": r.type, "Cantidad": r.quantity})
 st.table(resources_table)
 
-with tab2:
+(tab1,) = st.tabs(["Eventos"])
+
+with tab1:
     with st.form("form_event"):
 
         st.header("Gestion de Eventos")
@@ -90,11 +74,10 @@ with tab2:
         selected_resources = st.multiselect(
             "Recursos Necesarios", [r.name for r in DATA.list_resources()]
         )
-        for r in DATA.list_resources():
-            if r.name in selected_resources:
-                resource_objects = [
-                    r for r in DATA.list_resources() if r.name in selected_resources
-                ]
+
+        resource_objects = [
+            r for r in DATA.list_resources() if r.name in selected_resources
+        ]
 
         event_id = st.number_input("ID del evento", min_value=1)
 
@@ -105,9 +88,13 @@ with tab2:
 
 if add_event_button:
 
-    event = Events(event_name, start_time, end_time, selected_resources, event_id)
-    DATA.add_event(event, resource_objects)
-    st.success(f"Evento {event_name} agregado correctamente")
+    event = Events(event_name, start_time, end_time, resource_objects, event_id)
+    ok, msg = DATA.add_event(event, resource_objects)
+    if ok:
+        st.success(msg)
+        st.rerun()
+    else:
+        st.error(msg)
 
 st.table(
     [
@@ -115,9 +102,18 @@ st.table(
             "Nombre": e.name,
             "Inicio": e.start_time,
             "Fin": e.end_time,
-            "Recursos": [r for r in e.resources],
+            "Recursos": ",".join(r.name for r in e.resources),
             "Id": e.id,
         }
         for e in DATA.list_events()
     ]
 )
+
+st.subheader("Eliminar Evento")
+event_to_delete = st.number_input("ID del evento a eliminar", min_value=1)
+if st.button("🗑️ Eliminar Evento"):
+    if DATA.delete_event(event_to_delete):
+        st.success("Evento eliminado!")
+        st.rerun()
+    else:
+        st.error("Evento no encontrado")
