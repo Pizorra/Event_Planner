@@ -2,7 +2,10 @@ from resources import Resources
 from events import Events
 from datetime import datetime
 from constraints import CoRequisite, MutualExclusion, TypeExclusion
+from datetime import timedelta
 import json
+
+### Constructor ###
 
 
 class Database:
@@ -13,23 +16,24 @@ class Database:
         self.events = events
         self.constraints = []
 
-    def add_event(self, event: Events, resource: list):
+    ### Logica para Eventos ###
 
-        for i in self.events:
+    def add_event(self, event: Events, resource_list: list):
 
-            if event.conflicts_with(i):
-                return (False, "Conflicto detectado,no se puede agregar")
-
-        for resource_item in resource:
-            if not resource_item.is_available():
-                return (False, "Recurso no disponible")
-
-        is_valid, message = self.validate_constraints(resource)
+        is_valid, message = self.validate_constraints(resource_list)
         if not is_valid:
-            return (False, message)  # Retorna el error
+            return (False, message)
 
-        for resource_item in resource:
-            resource_item.quantity -= 1
+        for res in resource_list:
+            available = self.get_available_resource_quantity(
+                res.name, event.start_time, event.end_time
+            )
+
+            if available < 1:
+                return (
+                    False,
+                    f"No hay suficientes unidades de {res.name} para este horario",
+                )
 
         self.events.append(event)
         return (True, "Evento agregado correctamente")
@@ -41,9 +45,6 @@ class Database:
 
                 self.events.pop(self.events.index(event))
 
-                for resource in event.resources:
-
-                    resource.quantity += 1
                 return True
 
         print("El id no existe")
@@ -61,6 +62,8 @@ class Database:
                 return event
         return None
 
+    ### Logica para Recursos ###
+
     def resource_usage(self, resource_name):
         res = []
 
@@ -72,12 +75,32 @@ class Database:
                     res.append(event.name)
         return res
 
+    def get_available_resource_quantity(self, resource_name, start_time, end_time):
+
+        resource = next((r for r in self.resources if r.name == resource_name), None)
+
+        if not resource:
+            return 0
+
+        available = resource.quantity
+
+        temp_event = Events("Temp", start_time, end_time, [], 0)
+
+        for event in self.events:
+
+            if event.conflicts_with(temp_event) and event.uses_resource(resource):
+                available -= 1
+
+        return available
+
     def add_resource(self, resource: Resources):
 
         self.resources.append(resource)
 
     def list_resources(self):
         return self.resources
+
+    ### Logica para Restriciones ###
 
     def add_constraint(self, constraint):
         """Agrega una restricción a la lista"""
@@ -167,6 +190,82 @@ class Database:
 
             print(f"Error loading constraints: {e}")
             return False
+
+    ### Busqueda automatica de espacios entre eventos ###
+
+    def find_next_gap(self, duration_hours, resource_names, start_search_dt=None):
+        if start_search_dt is None:
+            start_search_dt = datetime.now()
+
+        target_resources = [
+            r for r in self.list_resources() if r.name in resource_names
+        ]
+
+        relevant_events = [
+            ev
+            for ev in self.events
+            if any(
+                res.name in [r.name for r in ev.resources] for res in target_resources
+            )
+        ]
+
+        relevant_events.sort(key=lambda x: x.start_time)
+
+        current_start = start_search_dt
+
+        # Bucle de Busqueda(Max 7 dias)
+
+        limit_date = start_search_dt + timedelta(days=7)
+
+        while current_start + timedelta(hours=duration_hours) <= limit_date:
+            current_end = current_start + timedelta(hours=duration_hours)
+
+            conflict = None
+
+            for ev in relevant_events:
+
+                # Comprobar el posible evento con el actual y chequear overlaps
+
+                if self.check_overlap(
+                    current_start, current_end, ev.start_time, ev.end_time
+                ):
+
+                    # Si hay overlap chequeamos igual que queden recursos libres y que se cumplan los constraints
+
+                    if not self.is_legally_available(
+                        current_start, current_end, target_resources
+                    ):
+                        conflict = ev
+                        break
+
+            if conflict is None:
+                # No conflictos se encontro el gap
+                return current_start, current_end
+
+            else:
+                # Salto
+                current_start = conflict.end_time
+
+        return None
+
+    ### Funciones Auxiliares de Find_Gap ###
+
+    def check_overlap(self, start1, end1, start2, end2):
+        # Verifica si dos intervalos de tiempo se cruzan
+        return start1 < end2 and start2 < end1
+
+    def is_legally_available(self, start_time, end_time, resource_list):
+        # Verifica disponibilidad fisica y cumplimiento de restricciones.
+
+        for res in resource_list:
+            qty = self.get_available_resource_quantity(res.name, start_time, end_time)
+            if qty <= 0:
+                return False
+
+        is_valid, message = self.validate_constraints(resource_list)
+        return is_valid
+
+    ### Persistencia de Datos ###
 
     def save_to_json(self, filename):
 
