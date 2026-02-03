@@ -111,6 +111,13 @@ with st.sidebar.expander("🛡️ Ver Disponibilidad de Recursos", expanded=Fals
     # Mostramos la tabla compacta
     st.dataframe(recursos_info, hide_index=True, use_container_width=True)
 
+### MUSICA ###
+with st.sidebar:
+    st.divider()
+    st.write("🎵 **Ambiente de Taberna**")
+    # Puedes usar un archivo local o una URL directa a un .mp3
+    st.audio("assets/8-bit-tavern-355302.mp3", format="audio/mp3", loop=True)
+
 ### BORRAR DATOS DEL JSON ###
 
 col1, col2 = st.sidebar.columns(2)
