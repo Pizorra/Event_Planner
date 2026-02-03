@@ -6,9 +6,6 @@ class Events:
 
     def __init__(self, name, start_time: datetime, end_time: datetime, resources, id):
 
-        if start_time > end_time:
-            raise ValueError("Valores invalidos de tiempo,pruebe otra vez")
-
         self.name = name
 
         self.start_time = start_time
@@ -33,7 +30,6 @@ class Events:
             return True
 
         return False
-    
 
     def uses_resource(self, resource: Resources):
 

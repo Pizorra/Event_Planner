@@ -116,27 +116,6 @@ class Database:
 
         for constraint in self.constraints:
 
-            # Tipo 1: Co-Requisito
-            if isinstance(constraint, CoRequisite):
-                # Si uso esto,DEBO usar esto otro
-                if constraint.when_using_this in resource_names:
-                    if constraint.requires_this not in resource_names:
-                        return (
-                            False,
-                            f"Error: {constraint.when_using_this} requiere {constraint.requires_this}",
-                        )
-
-            if isinstance(constraint, MutualExclusion):
-                # No puedo tener ambos recursos a la vez
-                if (
-                    constraint.resource_a in resource_names
-                    and constraint.resource_b in resource_names
-                ):
-                    return (
-                        False,
-                        f"Error: {constraint.resource_a} y {constraint.resource_b} no pueden estar juntos",
-                    )
-
             if isinstance(constraint, TypeExclusion):
                 # No puede haber dos recursos del mismo tipo
                 type_counts = {}
@@ -151,6 +130,28 @@ class Database:
                             False,
                             f"Error: No puede haber multiples recursos de tipo '{rtype}'",
                         )
+
+            if isinstance(constraint, MutualExclusion):
+                # No puedo tener ambos recursos a la vez
+                if (
+                    constraint.resource_a in resource_names
+                    and constraint.resource_b in resource_names
+                ):
+                    return (
+                        False,
+                        f"Error: {constraint.resource_a} y {constraint.resource_b} no pueden estar juntos",
+                    )
+
+            # Tipo 1: Co-Requisito
+            if isinstance(constraint, CoRequisite):
+                # Si uso esto,DEBO usar esto otro
+                if constraint.when_using_this in resource_names:
+                    if constraint.requires_this not in resource_names:
+                        return (
+                            False,
+                            f"Error: {constraint.when_using_this} requiere {constraint.requires_this}",
+                        )
+
         return (True, "Restricciones válidas")
 
     def load_constraints(self, filename):
