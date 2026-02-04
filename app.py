@@ -59,14 +59,25 @@ st.markdown(
     }}
 
     /* Textos generales y etiquetas */
-    p, label, .stSelectbox label, .stTextInput label, .stNumberInput label {{
-        color: #e0e0e0 !important;
-        font-weight: 500;
+    p, label, .stSelectbox label, .stTextInput label, .stNumberInput label, .stDateInput label, .stTimeInput label, .stMultiSelect label {{
+        color: #ffffff !important;
+        font-weight: 600; /* Un poco mas negrita para que resalte */
     }}
 
-    /* Ajustes para inputs que suelen ser blancos por defecto */
-    .stTextInput input, .stNumberInput input, .stSelectbox div[data-baseweb="select"] {{
-         color: #333; /* Texto dentro de los inputs oscuro para contraste con fondo blanco del input */
+    /* Ajustes para inputs - CAMBIO A TEXTO CLARO GLOBAL */
+    input, .stTextInput input, .stNumberInput input, .stSelectbox div[data-baseweb="select"] div, .stDateInput input, .stTimeInput input {{
+         color: #ffffff !important; /* Texto blanco */
+        caret-color: #ffffff;
+    }}
+    
+    /* Para los valores seleccionados en el Selectbox y Multiselect */
+    .stSelectbox div[data-baseweb="select"] span, .stMultiSelect div[data-baseweb="select"] span {{
+        color: #ffffff !important;
+    }}
+
+    /* Iconos de cerrar en multiselect o flechas */
+    .stMultiSelect svg, .stSelectbox svg {{
+        fill: #ffffff !important;
     }}
     </style>
     """,
@@ -114,7 +125,7 @@ with st.sidebar.expander("🛡️ Ver Disponibilidad de Recursos", expanded=Fals
 ### MUSICA ###
 with st.sidebar:
     st.divider()
-    st.write("🎵 **Ambiente de Taberna**")
+    st.write("🎵 **Ambiente**")
     # Puedes usar un archivo local o una URL directa a un .mp3
     st.audio("assets/8-bit-tavern-355302.mp3", format="audio/mp3", loop=True)
 
